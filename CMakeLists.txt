@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.9 FATAL_ERROR)
 SET(projectName networkingProject)
 
-project(projectName)
+project(${projectName})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_STANDARD_REQUIRED true)
-set(EXECUTABLE_NAME projectName)
+set(EXECUTABLE_NAME ${projectName})
 
 find_package(OpenCV REQUIRED)
 find_package( Boost 1.40 COMPONENTS program_options REQUIRED )
