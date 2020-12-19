@@ -28,13 +28,13 @@ ServerSocket::~ServerSocket()
 
 
 
-int ServerSocket::send(const unsigned char data[], int bytesToSend)
+int ServerSocket::send(const unsigned char data[], long bytesToSend)
 {
 
     return socket_.send_to(boost::asio::buffer(data, bytesToSend), remoteEndpoint_);
 }
 
-int ServerSocket::receive(unsigned char dataBuf[], int size)
+int ServerSocket::receive(unsigned char dataBuf[], long size)
 {
     return socket_.receive_from(boost::asio::buffer(dataBuf, size), remoteEndpoint_);
 }

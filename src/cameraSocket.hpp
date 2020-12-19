@@ -8,8 +8,8 @@ public:
     CameraSocket(std::string networkConfigPath);
     ~CameraSocket();
     bool establishConnection();
-    int send(const unsigned char data[], int bytesToSend);
-    int receive(unsigned char data[], int size);
+    int send(const unsigned char data[], long bytesToSend);
+    int receive(unsigned char data[], long size);
 
 private:
     boost::asio::io_service ioService_;

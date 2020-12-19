@@ -7,34 +7,32 @@
 #include "cameraSocket.hpp"
 #include "serverSocket.hpp"
 
+#include <fstream>
 
 
 void Server()
 {
   const int frameSize = 307200;
-  cv::VideoCapture cap;
 
-  unsigned char* buffer = new unsigned char[frameSize];
+  unsigned char* buffer = new unsigned char[frameSize*2]; // should be frameSize, but segfaults otherwise. 
   ServerSocket server("../config/networkConfig.ini");
   server.receive(buffer, frameSize);
   std::cout << "[Server] Client reached out and established a connection...\n";
 
-  int bytesReceived = 0;
-  unsigned char* tempPtr = buffer;
+  long bytesReceived = 0;
   while (true)
   {
-    int spaceLeft = frameSize - bytesReceived;
-    bytesReceived += server.receive(tempPtr, frameSize-bytesReceived);
-    tempPtr += bytesReceived;
-    std::cout << bytesReceived << "\n";
+    long spaceLeft = frameSize - bytesReceived;
+
+    bytesReceived += server.receive(buffer+bytesReceived, spaceLeft);
     if (bytesReceived == frameSize)
     {
       std::cout << "Just received another frame\n";
       bytesReceived = 0;
-      tempPtr = buffer;
-      cv::Mat frame(480, 640, 16, buffer);
 
-      cap >> frame;
+
+      // display buffer
+      cv::Mat frame(480, 640, 16, buffer);
       cv::imshow("this is a stream of clients stuff", frame);
       cv::waitKey();
     }
@@ -55,21 +53,20 @@ int openCVClient()
     {
         Mat frame;
         cap >> frame;
+
         int numElements = frame.rows*frame.cols;
-        const int NUM_BITS_IN_CHUNK = 30720*8;
-        const int CHUNK_SIZE = NUM_BITS_IN_CHUNK / CHAR_BIT;
+        const int CHUNK_SIZE = numElements / 10; // breaks up image into 10 packets
 
         unsigned char* tempPtr = frame.data;
-        int currentSize = numElements;
-        while (currentSize != 0)
+        int unsentBits = numElements;
+        while (unsentBits != 0)
         {
-          cameraSocket.send(tempPtr, CHUNK_SIZE);
+          unsentBits -= cameraSocket.send(tempPtr, CHUNK_SIZE);
           tempPtr += CHUNK_SIZE;
         }
-        return 1;
 
         if( frame.empty() ) break; // end of video stream
-        imshow("Client camera", frame);
+          cv::imshow("Client camera", frame);
         if( waitKey(10) == 27 ) break; // stop capturing by pressing ESC 
     }
     // the camera will be closed automatically upon exit
